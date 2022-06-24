@@ -1,0 +1,8 @@
+services:
+  maria-db:
+    image: mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=root
+      - MARIADB_DATABASE=taxi
+    ports:
+      - 3306:3306
