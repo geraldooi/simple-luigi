@@ -49,6 +49,37 @@ class LoadToDB(luigi.Task):
         print('-----LoadToDB-----\n\n')
 
 
+class QueryDBToCSV(luigi.Task):
+    task_namespace = "go-luigi"
+
+    def requires(self):
+        # Require 2 table to de load in DB
+        # ../data/trip.csv
+        # ../data/zone.csv
+        pass
+
+    def output(self):
+        return luigi.LocalTarget('../output.csv')
+
+    def run(self):
+        print('\n\n-----QueryDBToCSV-----')
+
+        # TODO: Query DB
+
+        print('-----QueryDBToCSV-----\n\n')
+
+
+class EmailResult(luigi.Task):
+    task_namespace = "go-luigi"
+
+    def run(self):
+        print('\n\n-----EmailResult-----')
+
+        # TODO: Send email
+
+        print('-----EmailResult-----\n\n')
+
+
 if __name__ == '__main__':
     luigi.build([LoadToDB(csv_file='../data/trip.csv',
                 table_name='trip')], local_scheduler=True)
