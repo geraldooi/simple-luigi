@@ -159,27 +159,26 @@ if __name__ == "__main__":
     output_df = QueryDBToCSV(query).run()
 
     newline = "\n"
-    message = f'''
-Dear All,
+    message = dedent(f'''
+        Dear All,
 
-I found something,
+        I found something,
 
-From Upper East Side North -> Upper East Side South:
-Number of rows selected: {output_df.shape[0]}
-Average passenger count per trip: {round(sum(output_df.passenger_count) / len(output_df.passenger_count), 2)}
-Average total amount per trip: {round(sum(output_df.total_amount) / len(output_df.total_amount), 2)}
-Average distance per trip: {round(sum(output_df.trip_distance) / len(output_df.trip_distance), 2)}
-Average duration per trip (in minutes): {round(sum(output_df.trip_duration) / len(output_df.trip_duration), 2)}
+        From Upper East Side North -> Upper East Side South:
+        Number of rows selected: {output_df.shape[0]}
+        Average passenger count per trip: {round(sum(output_df.passenger_count) / len(output_df.passenger_count), 2)}
+        Average total amount per trip: {round(sum(output_df.total_amount) / len(output_df.total_amount), 2)}
+        Average distance per trip: {round(sum(output_df.trip_distance) / len(output_df.trip_distance), 2)}
+        Average duration per trip (in minutes): {round(sum(output_df.trip_duration) / len(output_df.trip_duration), 2)}
 
--------------------------------------------
-Summary (First 5 rows order by pickup time)
--------------------------------------------
-{'|'.join(output_df.columns.to_list())}
-{newline.join(
-    list('|'.join(map(
-        str, output_df.values.tolist()[:5][i])) 
-        for i in range(5)))}
-'''
+        -------------------------------------------
+        Summary (First 5 rows order by pickup time)
+        -------------------------------------------
+        {'|'.join(output_df.columns.to_list())}
+    ''')
+    for i in range(5):
+        message += '|'.join(map(str, output_df.values.tolist()
+                            [:5][i])) + newline
 
     luigi.build([EmailResult(subject="Luigi Exercise", 
                             message=message,
