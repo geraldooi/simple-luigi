@@ -101,7 +101,6 @@ class EmailResult(luigi.Task):
         return luigi.LocalTarget(f"/home/weijie/luigi/simple-luigi/data/email_result_{datetime.now().strftime('%Y%m%d')}.txt")
 
     def run(self):
-        # Create EmailMessage object
         print('----------------------Send Email---------------------------')        
 
         df = pd.read_csv(self.csv_file, index_col=0)
