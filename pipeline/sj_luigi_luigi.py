@@ -1,6 +1,6 @@
 import os
 import smtplib
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.message import EmailMessage
 from textwrap import dedent
 
@@ -27,6 +27,7 @@ class email(luigi.Config):
     email_password = luigi.Parameter()
     email_server = luigi.Parameter()
     email_out_port = luigi.Parameter()
+    email_to = luigi.Parameter()
 
 
 class LoadToDB(luigi.Task):
@@ -85,7 +86,6 @@ class EmailResult(luigi.Task):
 
     subject = luigi.Parameter()
     message = luigi.Parameter()
-    receipients = luigi.Parameter()
     attach_files = luigi.Parameter()
 
     def requires(self):
@@ -110,8 +110,9 @@ class EmailResult(luigi.Task):
         # creates EmailMessage object
         msg = EmailMessage()
         msg["Subject"] = self.subject
+        msg["Date"] = datetime.now() -+ timedelta(hours=8)
         msg["From"] = email().email_from
-        msg["To"] = ", ".join(self.receipients)
+        msg["To"] = email().email_to.split(", ")
         msg.set_content(dedent(self.message))
 
         # attach files
@@ -131,7 +132,7 @@ class EmailResult(luigi.Task):
         except Exception as e:
             print(f"Exception: {e}")
         finally:
-            print(f"Email sent to {self.receipients}")
+            print(f"Email sent to {email().email_to}")
             s.quit()
 
 
@@ -161,7 +162,7 @@ if __name__ == "__main__":
     newline = "\n"
     message = dedent(f'''
         Dear All,
-
+        
         I found something,
 
         From Upper East Side North -> Upper East Side South:
@@ -170,7 +171,7 @@ if __name__ == "__main__":
         Average total amount per trip: {round(sum(output_df.total_amount) / len(output_df.total_amount), 2)}
         Average distance per trip: {round(sum(output_df.trip_distance) / len(output_df.trip_distance), 2)}
         Average duration per trip (in minutes): {round(sum(output_df.trip_duration) / len(output_df.trip_duration), 2)}
-
+        
         -------------------------------------------
         Summary (First 5 rows order by pickup time)
         -------------------------------------------
@@ -182,7 +183,6 @@ if __name__ == "__main__":
 
     luigi.build([EmailResult(subject="Luigi Exercise", 
                             message=message,
-                            receipients=["seejie@postpay.asia"],
                             attach_files=["pipeline/output.csv"]
                             )],
                 local_scheduler=True)
