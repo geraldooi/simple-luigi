@@ -22,6 +22,7 @@ class mydb(luigi.Config):
             f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.dbname}"
         )
 
+
 class email(luigi.Config):
     email_from = luigi.Parameter()
     email_password = luigi.Parameter()
@@ -39,17 +40,20 @@ class LoadToDB(luigi.Task):
         return luigi.LocalTarget(f"/home/seejie/simple-luigi/pipeline/{self.table_name}_load_to_db_{datetime.now().strftime('%Y%m%d')}.txt")
 
     def run(self):
-        print(f"\n\n------------------------------- Load {self.csv_file} to DB -------------------------------")
+        print(
+            f"\n\n------------------------------- Load {self.csv_file} to DB -------------------------------")
 
         df = pd.read_csv(self.csv_file, index_col=0)
 
         print(df.head())
 
         # create table in db
-        df.head(0).to_sql(name=self.table_name, con=mydb().engine, if_exists="replace")
+        df.head(0).to_sql(name=self.table_name,
+                          con=mydb().engine, if_exists="replace")
 
         # load data into db table
-        df.to_sql(name=self.table_name, con=mydb().engine, if_exists="append", chunksize=100000)
+        df.to_sql(name=self.table_name, con=mydb().engine,
+                  if_exists="append", chunksize=100000)
 
         with self.output().open('w') as f:
             f.write('Done')
@@ -70,7 +74,7 @@ class QueryDBToCSV(luigi.Task):
 
     def run(self):
         print("\n\n------------------------------- From Upper East Side North -> Upper East Side South -------------------------------")
-        
+
         output_df = pd.read_sql(self.query, con=mydb().engine)
         print(output_df)
 
@@ -100,16 +104,14 @@ class EmailResult(luigi.Task):
                                     WHERE PULocationZone = 'Upper East Side North' AND DOLocationZone = 'Upper East Side South';
                                 '''
                             )
-    
+
     def output(self):
         return luigi.LocalTarget(f"/home/seejie/simple-luigi/pipeline/load_to_db_{datetime.now().strftime('%Y%m%d')}_2.txt")
 
     def run(self):
-        print("------------------------------- Sending Email -------------------------------")
+        print(
+            "------------------------------- Sending Email -------------------------------")
 
-        # with self.output().open('w') as f:
-        #     f.write('Done')
-        
         # creates EmailMessage object
         msg = EmailMessage()
         msg["Subject"] = self.subject
@@ -124,7 +126,8 @@ class EmailResult(luigi.Task):
                 file_data = f.read()
                 file_name = os.path.basename("pipeline/output.csv")
 
-            msg.add_attachment(file_data, maintype="application", subtype="octet-stream", filename=file_name)
+            msg.add_attachment(file_data, maintype="application",
+                               subtype="octet-stream", filename=file_name)
 
         # send email
         try:
@@ -139,10 +142,10 @@ class EmailResult(luigi.Task):
 
 
 if __name__ == "__main__":
-    luigi.build([LoadToDB(csv_file="data/trip.csv", table_name="trip")], 
+    luigi.build([LoadToDB(csv_file="data/trip.csv", table_name="trip")],
                 local_scheduler=True)
 
-    luigi.build([LoadToDB(csv_file="data/zone.csv", table_name="zone")], 
+    luigi.build([LoadToDB(csv_file="data/zone.csv", table_name="zone")],
                 local_scheduler=True)
 
     query = '''
@@ -158,7 +161,7 @@ if __name__ == "__main__":
 
     luigi.build([QueryDBToCSV(query=query)],
                 local_scheduler=True)
-    
+
     output_df = QueryDBToCSV(query).run()
 
     newline = "\n"
@@ -184,15 +187,13 @@ Summary (First 5 rows order by pickup time)
         for i in range(5)))}
 '''
 
-    luigi.build([EmailResult(subject="Luigi Exercise", 
-                            message=message,
-                            receipients=["seejie@postpay.asia"],
-                            attach_files=["pipeline/output.csv"]
-                            )],
+    luigi.build([EmailResult(subject="Luigi Exercise",
+                             message=message,
+                             receipients=["seejie@postpay.asia"],
+                             attach_files=["pipeline/output.csv"]
+                             )],
                 local_scheduler=True)
 
     os.remove("pipeline/trip_load_to_db_20220627.txt")
     os.remove("pipeline/zone_load_to_db_20220627.txt")
     os.remove("pipeline/output.csv")
-
-
