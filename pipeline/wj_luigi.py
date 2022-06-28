@@ -107,7 +107,7 @@ class EmailResult(luigi.Task):
         df = pd.read_csv(self.csv_file, index_col=0)
 
         # Email content   
-        newline = '\n'
+        newline = '\n \t '
         receipients = ['weijie@postpay.asia']
         subject = 'Exercise'
         message = f'''
@@ -131,6 +131,7 @@ class EmailResult(luigi.Task):
                 str, df.values.tolist()[:5][i])) 
                 for i in range(5)))}
         '''
+        print(message)
 
         msg = EmailMessage()
         msg['Subject'] = subject
@@ -157,11 +158,11 @@ class EmailResult(luigi.Task):
             s.quit() # close the smtp connection
 
 if __name__ == "__main__":
-    luigi.build([LoadToDB(csv_file="data/trip.csv", table_name="trip")],
-                local_scheduler=True)
-    luigi.build([LoadToDB(csv_file="data/zone.csv", table_name="zone")],
-                local_scheduler=True)
+    # luigi.build([LoadToDB(csv_file="data/trip.csv", table_name="trip")],
+    #             local_scheduler=True)
+    # luigi.build([LoadToDB(csv_file="data/zone.csv", table_name="zone")],
+    #             local_scheduler=True)
 
-    luigi.build([QueryDBToCSV()], local_scheduler=True)
+    # luigi.build([QueryDBToCSV()], local_scheduler=True)
 
     luigi.build([EmailResult(csv_file="data/output.csv")],local_scheduler=True)
