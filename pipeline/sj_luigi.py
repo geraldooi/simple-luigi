@@ -107,9 +107,6 @@ class EmailResult(luigi.Task):
     def run(self):
         print("------------------------------- Sending Email -------------------------------")
 
-        # with self.output().open('w') as f:
-        #     f.write('Done')
-        
         # creates EmailMessage object
         msg = EmailMessage()
         msg["Subject"] = self.subject
@@ -190,9 +187,5 @@ Summary (First 5 rows order by pickup time)
                             attach_files=["pipeline/output.csv"]
                             )],
                 local_scheduler=True)
-
-    os.remove("pipeline/trip_load_to_db_20220627.txt")
-    os.remove("pipeline/zone_load_to_db_20220627.txt")
-    os.remove("pipeline/output.csv")
 
 
