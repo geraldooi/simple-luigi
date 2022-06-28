@@ -5,7 +5,7 @@ import statistics
 
 from email.message import EmailMessage
 from textwrap import dedent
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 
 
@@ -27,6 +27,9 @@ class email(luigi.Config):
     password = luigi.Parameter()
     server = luigi.Parameter()
     out_port = luigi.Parameter()
+
+class receivers(luigi.Config):
+    email = luigi.Parameter()
 
 class LoadToDB(luigi.Task):
     task_namespace = "wj_luigi"
@@ -106,8 +109,6 @@ class EmailResult(luigi.Task):
         df = pd.read_csv(self.csv_file, index_col=0)
 
         # Email content   
-        newline = '\n \t '
-        receipients = ['weijie@postpay.asia']
         subject = 'Exercise'
         message = dedent(f'''
         Dear All,
@@ -128,12 +129,12 @@ class EmailResult(luigi.Task):
         ''')
         for i in range(5):
             message += '|'.join(map(str, df.values.tolist()[:5][i])) + '\n'
-        
 
         msg = EmailMessage()
+        msg["Date"] = datetime.now() -+ timedelta(hours=8)
         msg['Subject'] = subject
         msg['From'] = email().username
-        msg['To'] = ', '.join(receipients)
+        msg['To'] = receivers().email
         msg.set_content(dedent(message))
 
         # attach files
@@ -151,7 +152,7 @@ class EmailResult(luigi.Task):
         except Exception as e:
             print(f'Exception: {e}')
         finally:
-            print(f'Email sent to {receipients}')
+            print(f'Email sent to {receivers().email}')
             s.quit() # close the smtp connection
 
 if __name__ == "__main__":
