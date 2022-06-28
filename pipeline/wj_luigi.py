@@ -109,7 +109,7 @@ class EmailResult(luigi.Task):
         newline = '\n \t '
         receipients = ['weijie@postpay.asia']
         subject = 'Exercise'
-        message = f'''
+        message = dedent(f'''
         Dear All,
 
         I found something,
@@ -125,10 +125,9 @@ class EmailResult(luigi.Task):
         Summary (First 5 rows order by pickup time)
         -------------------------------------------
         {'|'.join(df.columns.to_list())}
-        {newline.join(
-            list("|".join(map(
-                str, df.values.tolist()[:5][i])) 
-                for i in range(5)))}
+        ''')
+        for i in range(5):
+            message += '|'.join(map(str, df.values.tolist()[:5][i])) + '\n'
         '''
 
         msg = EmailMessage()
