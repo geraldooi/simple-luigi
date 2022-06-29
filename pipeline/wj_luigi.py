@@ -131,7 +131,7 @@ class EmailResult(luigi.Task):
             message += '|'.join(map(str, df.values.tolist()[:5][i])) + '\n'
 
         msg = EmailMessage()
-        msg["Date"] = datetime.now() -+ timedelta(hours=8)
+        msg["Date"] = datetime.now() - timedelta(hours=8)
         msg['Subject'] = subject
         msg['From'] = email().username
         msg['To'] = receivers().email
